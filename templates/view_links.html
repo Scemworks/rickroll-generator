@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generated Links</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="links-container">
+        <h1>Generated Links</h1>
+        <table>
+            <thead>
+                <tr>
+                    <th>Link Handle</th>
+                    <th>Target URL</th>
+                    <th>Expiration Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for link in links %}
+                <tr>
+                    <td>{{ link[1] }}</td>
+                    <td><a href="{{ link[2] }}" target="_blank">{{ link[2] }}</a></td>
+                    <td>{{ link[3] }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+<button onclick="window.location.href='{{ url_for('logout') }}';">Logout</button>
+    </div>
+</body>
+</html>

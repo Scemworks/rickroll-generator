@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Your Custom Rickroll Link</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Create Your Custom Rickroll Link</h1>
+        {% if error %}
+            <p class="error">{{ error }}</p>
+            <script>
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: '{{ error }}',
+                });
+            </script>
+        {% endif %}
+        {% if success %}
+            <p class="success">Your custom link: <a href="{{ link }}" target="_blank">{{ link }}</a></p>
+            <script>
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Link Created!',
+                    text: 'Share your link with friends!',
+                });
+            </script>
+        {% else %}
+            <form action="/create" method="POST">
+                <label for="handle">Custom Link Handle:</label>
+                <input type="text" id="handle" name="handle" placeholder="e.g., funny-video" required>
+                <button type="submit">Create Link</button>
+            </form>
+        {% endif %}
+    </div>
+</body>
+</html>

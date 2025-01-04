@@ -1,0 +1,194 @@
+/* Basic body styling */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+/* Container for the form and table */
+.container {
+    background: white;
+    padding: 20px 30px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    max-width: 800px;
+    width: 100%;
+}
+
+/* Title styling */
+h1 {
+    color: #003366;
+    margin-bottom: 20px;
+}
+
+/* Form styling */
+form {
+    margin-top: 10px;
+}
+
+/* Input fields */
+input {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    width: 70%;
+    margin-bottom: 15px;
+}
+
+/* Button styling */
+button {
+    padding: 10px 20px;
+    background-color: #007BFF;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 20px;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+/* Error message styling */
+.error {
+    color: red;
+    margin-bottom: 10px;
+}
+
+/* Success message styling */
+.success a {
+    color: green;
+    text-decoration: none;
+}
+
+/* Table layout for links */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+table th, table td {
+    padding: 12px;
+    text-align: left;
+    border: 1px solid #ddd;
+}
+
+table th {
+    background-color: #003366;
+    color: white;
+}
+
+table td {
+    background-color: #f9f9f9;
+}
+
+table tr:hover {
+    background-color: #f1f1f1;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .container {
+        padding: 15px;
+    }
+
+    h1 {
+        font-size: 24px;
+    }
+
+    input, button {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+
+    table th, table td {
+        font-size: 14px;
+    }body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+    }
+    
+    .container {
+        background: white;
+        padding: 20px 30px;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        text-align: center;
+        max-width: 600px;
+        width: 100%;
+    }
+    
+    h1 {
+        color: #003366;
+        margin-bottom: 20px;
+    }
+    
+    form {
+        margin-top: 10px;
+    }
+    
+    input {
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        width: 70%;
+    }
+    
+    button {
+        padding: 10px 20px;
+        background-color: #007BFF;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        margin-top: 20px;
+    }
+    
+    button:hover {
+        background-color: #0056b3;
+    }
+    
+    .error {
+        color: red;
+        margin-bottom: 10px;
+    }
+    
+    .success a {
+        color: green;
+        text-decoration: none;
+    }
+    
+}
+
+@media (max-width: 480px) {
+    .container {
+        padding: 10px;
+    }
+
+    h1 {
+        font-size: 20px;
+    }
+
+    input, button {
+        width: 100%;
+        font-size: 14px;
+    }
+
+    table th, table td {
+        font-size: 12px;
+    }
+}
