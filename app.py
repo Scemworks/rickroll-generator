@@ -2,12 +2,14 @@ import sqlite3
 from flask import Flask, render_template, request, redirect, url_for, session
 from datetime import datetime, timedelta
 import secrets
+import os
+
 
 app = Flask(__name__, static_folder="templates/static")  # Default static folder is used
 # Generate a random secret key for session management
 app.secret_key = secrets.token_hex(16)
 
-DATABASE = "custom_links.db"
+DATABASE = os.path.join("/tmp", "custom_links.db")
 DEFAULT_PASSWORD = "link@rickroll"  # The fixed password
 
 # Initialize the database
