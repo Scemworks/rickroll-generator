@@ -1,56 +1,59 @@
-import sqlite3
+import psycopg2
+from psycopg2 import sql
 from flask import Flask, render_template, request, redirect, url_for, session
 from datetime import datetime, timedelta
 import secrets
 import os
 
-
 app = Flask(__name__, static_folder="templates/static")  # Default static folder is used
 # Generate a random secret key for session management
 app.secret_key = secrets.token_hex(16)
 
-DATABASE = os.path.join("/tmp", "custom_links.db")
+# PostgreSQL database URL
+DATABASE_URL = "postgresql://neondb_owner:owK1qpUWr0Ck@ep-cold-glitter-a1vo1tgq-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require"
 DEFAULT_PASSWORD = "link@rickroll"  # The fixed password
 
 # Initialize the database
 def init_db():
-    with sqlite3.connect(DATABASE) as conn:
-        cursor = conn.cursor()
-        # Create the links table with the required columns
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS links (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                handle TEXT UNIQUE NOT NULL,
-                target_url TEXT NOT NULL,
-                expiration_date DATETIME NOT NULL,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-        """)
-        conn.commit()
+    with psycopg2.connect(DATABASE_URL) as conn:
+        with conn.cursor() as cursor:
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS links (
+                    id SERIAL PRIMARY KEY,
+                    handle TEXT UNIQUE NOT NULL,
+                    target_url TEXT NOT NULL,
+                    expiration_date TIMESTAMP NOT NULL,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            """)
+            conn.commit()
 
 # Function to add a custom link to the database with expiration
 def add_custom_link(handle, target_url, expiration_date):
-    with sqlite3.connect(DATABASE) as conn:
-        cursor = conn.cursor()
-        cursor.execute(
-            "INSERT INTO links (handle, target_url, expiration_date) VALUES (?, ?, ?)",
-            (handle, target_url, expiration_date)
-        )
-        conn.commit()
+    with psycopg2.connect(DATABASE_URL) as conn:
+        with conn.cursor() as cursor:
+            cursor.execute(
+                "INSERT INTO links (handle, target_url, expiration_date) VALUES (%s, %s, %s)",
+                (handle, target_url, expiration_date)
+            )
+            conn.commit()
 
 # Function to retrieve a link by its handle
 def get_link_by_handle(handle):
-    with sqlite3.connect(DATABASE) as conn:
-        cursor = conn.cursor()
-        cursor.execute("SELECT target_url, expiration_date FROM links WHERE handle = ?", (handle,))
-        result = cursor.fetchone()
-        if result:
-            target_url, expiration_date = result
-            # Check if the link is expired
-            if datetime.now() > datetime.strptime(expiration_date, "%Y-%m-%d %H:%M:%S"):
-                return None  # Link is expired
-            return target_url
-        return None  # Link does not exist
+    with psycopg2.connect(DATABASE_URL) as conn:
+        with conn.cursor() as cursor:
+            cursor.execute(
+                "SELECT target_url, expiration_date FROM links WHERE handle = %s",
+                (handle,)
+            )
+            result = cursor.fetchone()
+            if result:
+                target_url, expiration_date = result
+                # Check if the link is expired
+                if datetime.now() > expiration_date:
+                    return None  # Link is expired
+                return target_url
+            return None  # Link does not exist
 
 @app.route("/")
 def home():
@@ -60,7 +63,7 @@ def home():
 def create_link():
     handle = request.form.get("handle")
     target_url = "https://www.youtube.com/watch?v=dQw4w9WgXcQ"  # Default Rickroll URL
-    expiration_date = (datetime.now() + timedelta(days=7)).strftime("%Y-%m-%d %H:%M:%S")
+    expiration_date = datetime.now() + timedelta(days=7)
 
     # Check if the link handle already exists
     if get_link_by_handle(handle):
@@ -103,14 +106,12 @@ def view_links():
     if "logged_in" not in session:
         return redirect(url_for("login"))
 
-    with sqlite3.connect(DATABASE) as conn:
-        cursor = conn.cursor()
-        cursor.execute("SELECT id, handle, target_url, expiration_date FROM links")
-        links = cursor.fetchall()
+    with psycopg2.connect(DATABASE_URL) as conn:
+        with conn.cursor() as cursor:
+            cursor.execute("SELECT id, handle, target_url, expiration_date FROM links")
+            links = cursor.fetchall()
 
     return render_template("view_links.html", links=links)
 
-if __name__ == "__main__":
-    # Initialize the database when the app starts
-    init_db()
-    app.run(host="0.0.0.0", port=8080)
+# Initialize the database when the app starts
+init_db()
