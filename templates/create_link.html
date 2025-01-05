@@ -22,6 +22,7 @@
         {% endif %}
         {% if success %}
             <p class="success">Your custom link: <a href="{{ link }}" target="_blank">{{ link }}</a></p>
+            <button onclick="navigator.clipboard.writeText('{{ link }}'); Swal.fire({ icon: 'success', title: 'Copied!', text: 'Link copied to clipboard!' });">Copy Link</button>
             <script>
                 Swal.fire({
                     icon: 'success',
