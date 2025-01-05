@@ -14,4 +14,4 @@ A simple Flask web application to generate custom Rickroll links. Share unique l
 ### 3. The link redirects to the Rickroll video!
 
 ## Website
-https://rickroll-generator.vercel.app
+https://customblogs.vercel.app
