@@ -76,7 +76,7 @@ def remove_expired_links_from_db():
 # Function to remove expired links from the database
 def remove_expired_links_from_db_custom_time():
     from datetime import datetime
-    current_time = datetime(2025, 1, 19, 10, 27, 40)
+    current_time = datetime.today()
     with psycopg2.connect(DATABASE_URL) as conn:
         with conn.cursor() as cursor:
             # Delete expired links
