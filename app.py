@@ -64,6 +64,25 @@ def delete_expired_links():
             )
             conn.commit()
 
+# Function to remove expired links from the database
+def remove_expired_links_from_db():
+    current_time = datetime.now()
+    with psycopg2.connect(DATABASE_URL) as conn:
+        with conn.cursor() as cursor:
+            # Delete expired links
+            cursor.execute("DELETE FROM links WHERE expiration_date < %s", (current_time,))
+            conn.commit()
+
+# Function to remove expired links from the database
+def remove_expired_links_from_db_custom_time():
+    from datetime import datetime
+    current_time = datetime(2025, 1, 19, 10, 27, 40)
+    with psycopg2.connect(DATABASE_URL) as conn:
+        with conn.cursor() as cursor:
+            # Delete expired links
+            cursor.execute("DELETE FROM links WHERE expiration_date < %s", (current_time,))
+            conn.commit()
+
 @app.route("/")
 def home():
     return render_template("create_link.html")
@@ -119,6 +138,12 @@ def view_links():
         with conn.cursor() as cursor:
             cursor.execute("SELECT id, handle, target_url, expiration_date FROM links")
             links = cursor.fetchall()
+
+    # Convert links to a list of dictionaries
+    links = [{'id': link[0], 'handle': link[1], 'target_url': link[2], 'expiration_date': link[3]} for link in links]
+
+    # Delete expired links from the list
+    links = delete_expired_links_from_list(links)
 
     return render_template("view_links.html", links=links)
 
