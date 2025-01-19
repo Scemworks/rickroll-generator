@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 import secrets
 
 # Flask app initialization
-app = Flask(__name__, static_folder="templates/static")
+app = Flask(__name__, static_folder="templates/static", template_folder="templates")
 app.secret_key = secrets.token_hex(16)
 
 # Security configurations
@@ -127,11 +127,11 @@ def view_links():
     if "logged_in" not in session:
         return redirect(url_for("login"))
 
+    conn = db_pool.getconn()
     try:
-        with db_pool.getconn() as conn:
-            with conn.cursor() as cursor:
-                cursor.execute("SELECT id, handle, target_url, expiration_date FROM links")
-                links = cursor.fetchall()
+        with conn.cursor() as cursor:
+            cursor.execute("SELECT id, handle, target_url, expiration_date FROM links")
+            links = cursor.fetchall()
 
         links = [
             {
@@ -147,6 +147,9 @@ def view_links():
     except Exception as e:
         print(f"Error fetching links: {e}")
         return "An error occurred while fetching links."
+    finally:
+        if conn:
+            db_pool.putconn(conn)
 
 # Initialize the database when the app starts
 init_db()
