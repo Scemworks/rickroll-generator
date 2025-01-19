@@ -108,16 +108,14 @@ def view_links():
     if "logged_in" not in session:
         return redirect(url_for("login"))
     
-    try:
-        with psycopg2.connect(DATABASE_URL) as conn:
-            with conn.cursor() as cursor:
-                cursor.execute("SELECT id, handle, target_url, expiration_date FROM links")
-                links = cursor.fetchall()
+    with psycopg2.connect(DATABASE_URL) as conn:
+        with conn.cursor() as cursor:
+            cursor.execute("SELECT id, handle, target_url, expiration_date FROM links")
+            links = cursor.fetchall()
 
-        # Convert links to a list of dictionaries
-        links = [{'id': link[0], 'handle': link[1], 'target_url': link[2], 'expiration_date': link[3]} for link in links]
-        return render_template("view_links.html", links=links)
-
+    # Convert links to a list of dictionaries
+    links = [{'id': link[0], 'handle': link[1], 'target_url': link[2], 'expiration_date': link[3]} for link in links]
+    return render_template("view_links.html", links=links)
 
 # Initialize the database when the app starts
 init_db()
