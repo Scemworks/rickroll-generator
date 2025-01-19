@@ -55,17 +55,9 @@ def get_link_by_handle(handle):
                 return target_url
             return None  # Link does not exist
 
-# Function to delete expired links from the database
-def delete_expired_links():
-    with psycopg2.connect(DATABASE_URL) as conn:
-        with conn.cursor() as cursor:
-            cursor.execute(
-                "DELETE FROM links WHERE expiration_date < NOW()"
-            )
-            conn.commit()
-
 # Function to remove expired links from the database
 def remove_expired_links_from_db():
+    from datetime import datetime
     current_time = datetime.now()
     with psycopg2.connect(DATABASE_URL) as conn:
         with conn.cursor() as cursor:
@@ -73,15 +65,12 @@ def remove_expired_links_from_db():
             cursor.execute("DELETE FROM links WHERE expiration_date < %s", (current_time,))
             conn.commit()
 
-# Function to remove expired links from the database
-def remove_expired_links_from_db_custom_time():
+# Function to delete expired links from a list
+def delete_expired_links_from_list(links):
     from datetime import datetime
-    current_time = datetime.today()
-    with psycopg2.connect(DATABASE_URL) as conn:
-        with conn.cursor() as cursor:
-            # Delete expired links
-            cursor.execute("DELETE FROM links WHERE expiration_date < %s", (current_time,))
-            conn.commit()
+    current_time = datetime.now()
+    links = [link for link in links if link['expiration_date'] > current_time]
+    return links
 
 @app.route("/")
 def home():
@@ -149,3 +138,4 @@ def view_links():
 
 # Initialize the database when the app starts
 init_db()
+remove_expired_links_from_db()
