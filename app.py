@@ -109,8 +109,6 @@ def view_links():
         return redirect(url_for("login"))
     
     try:
-        from datetime import datetime
-        current_time = datetime.now()
         with psycopg2.connect(DATABASE_URL) as conn:
             with conn.cursor() as cursor:
                 cursor.execute("SELECT id, handle, target_url, expiration_date FROM links")
@@ -118,7 +116,6 @@ def view_links():
 
         # Convert links to a list of dictionaries
         links = [{'id': link[0], 'handle': link[1], 'target_url': link[2], 'expiration_date': link[3]} for link in links]
-        
         return render_template("view_links.html", links=links)
 
 
