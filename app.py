@@ -55,22 +55,6 @@ def get_link_by_handle(handle):
                 return target_url
             return None  # Link does not exist
 
-# Function to remove expired links from the database
-def remove_expired_links_from_db():
-    from datetime import datetime
-    current_time = datetime.now()
-    with psycopg2.connect(DATABASE_URL) as conn:
-        with conn.cursor() as cursor:
-            # Delete expired links
-            cursor.execute("DELETE FROM links WHERE expiration_date < %s", (current_time,))
-            conn.commit()
-
-# Function to delete expired links from a list
-def delete_expired_links_from_list(links):
-    from datetime import datetime
-    current_time = datetime.now()
-    links = [link for link in links if link['expiration_date'] > current_time]
-    return links
 
 
 @app.route("/")
@@ -121,8 +105,9 @@ def logout():
 # View generated links - protected by authentication
 @app.route("/view_links")
 def view_links():
-    from datetime import datetime
-    current_time = datetime.now()
+    if "logged_in" not in session:
+        return redirect(url_for("login"))
+
     with psycopg2.connect(DATABASE_URL) as conn:
         with conn.cursor() as cursor:
             cursor.execute("SELECT id, handle, target_url, expiration_date FROM links")
@@ -131,10 +116,10 @@ def view_links():
     # Convert links to a list of dictionaries
     links = [{'id': link[0], 'handle': link[1], 'target_url': link[2], 'expiration_date': link[3]} for link in links]
 
-    # Filter out expired links
-    valid_links = [link for link in links if link['expiration_date'] > current_time]
+    # Delete expired links from the list
+    links = delete_expired_links_from_list(links)
 
-    return render_template("view_links.html", links=valid_links)
+    return render_template("view_links.html", links=links)
 
 # Initialize the database when the app starts
 init_db()
