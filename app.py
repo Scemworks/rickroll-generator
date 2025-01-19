@@ -116,9 +116,6 @@ def view_links():
     # Convert links to a list of dictionaries
     links = [{'id': link[0], 'handle': link[1], 'target_url': link[2], 'expiration_date': link[3]} for link in links]
 
-    # Delete expired links from the list
-    links = delete_expired_links_from_list(links)
-
     return render_template("view_links.html", links=links)
 
 # Initialize the database when the app starts
