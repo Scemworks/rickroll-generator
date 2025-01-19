@@ -118,19 +118,9 @@ def view_links():
 
         # Convert links to a list of dictionaries
         links = [{'id': link[0], 'handle': link[1], 'target_url': link[2], 'expiration_date': link[3]} for link in links]
+        
+        return render_template("view_links.html", links=links)
 
-        # Filter out expired links
-        valid_links = [link for link in links if link['expiration_date'] > current_time]
-
-        return render_template("view_links.html", links=valid_links)
-    except psycopg2.Error as e:
-        # Log the error and return an error message
-        print(f"Database error: {e}")
-        return "A database error occurred while fetching links."
-    except Exception as e:
-        # Log the error and return an error message
-        print(f"Error fetching links: {e}")
-        return "An error occurred while fetching links."
 
 # Initialize the database when the app starts
 init_db()
