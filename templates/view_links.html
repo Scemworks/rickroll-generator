@@ -15,18 +15,21 @@
                     <th>Link Handle</th>
                     <th>Target URL</th>
                     <th>Expiration Date</th>
+                    <th>Status</th>
                 </tr>
             </thead>
             <tbody>
                 {% for link in links %}
                 <tr>
-                    <td>{{ link[1] }}</td>
-                    <td><a href="{{ link[2] }}" target="_blank">{{ link[2] }}</a></td>
-                    <td>{{ link[3] }}</td>
+                    <td>{{ link.handle }}</td>
+                    <td><a href="{{ link.target_url }}" target="_blank">{{ link.target_url }}</a></td>
+                    <td>{{ link.expiration_date }}</td>
+                    <td>{{ 'Expired' if link.is_expired else 'Active' }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
-<button onclick="window.location.href='{{ url_for('logout') }}';">Logout</button>
+        <button onclick="window.location.href='{{ url_for('logout') }}';">Logout</button>
     </div>
+</body>
 </html>
