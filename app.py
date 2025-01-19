@@ -134,4 +134,3 @@ def view_links():
 
 # Initialize the database when the app starts
 init_db()
-remove_expired_links_from_db()
