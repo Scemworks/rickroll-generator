@@ -55,6 +55,28 @@ def get_link_by_handle(handle):
                 return target_url
             return None  # Link does not exist
 
+# Function to delete expired links from the database
+def delete_expired_links():
+    with psycopg2.connect(DATABASE_URL) as conn:
+        with conn.cursor() as cursor:
+            cursor.execute(
+                "DELETE FROM links WHERE expiration_date < NOW()"
+            )
+            conn.commit()
+
+# Function to delete expired links from the database every 24 hours
+def delete_expired_links_job():
+    delete_expired_links()
+    # Schedule the next deletion
+    scheduler.add_job(delete_expired_links_job, 'interval', hours=24)
+
+# Schedule the first deletion
+from apscheduler.schedulers.background import BackgroundScheduler
+scheduler = BackgroundScheduler()
+delete_expired_links_job()
+scheduler.start()
+
+
 @app.route("/")
 def home():
     return render_template("create_link.html")
