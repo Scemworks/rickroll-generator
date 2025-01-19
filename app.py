@@ -107,16 +107,30 @@ def logout():
 def view_links():
     if "logged_in" not in session:
         return redirect(url_for("login"))
+    
+    try:
+        from datetime import datetime
+        current_time = datetime.now()
+        with psycopg2.connect(DATABASE_URL) as conn:
+            with conn.cursor() as cursor:
+                cursor.execute("SELECT id, handle, target_url, expiration_date FROM links")
+                links = cursor.fetchall()
 
-    with psycopg2.connect(DATABASE_URL) as conn:
-        with conn.cursor() as cursor:
-            cursor.execute("SELECT id, handle, target_url, expiration_date FROM links")
-            links = cursor.fetchall()
+        # Convert links to a list of dictionaries
+        links = [{'id': link[0], 'handle': link[1], 'target_url': link[2], 'expiration_date': link[3]} for link in links]
 
-    # Convert links to a list of dictionaries
-    links = [{'id': link[0], 'handle': link[1], 'target_url': link[2], 'expiration_date': link[3]} for link in links]
+        # Filter out expired links
+        valid_links = [link for link in links if link['expiration_date'] > current_time]
 
-    return render_template("view_links.html", links=links)
+        return render_template("view_links.html", links=valid_links)
+    except psycopg2.Error as e:
+        # Log the error and return an error message
+        print(f"Database error: {e}")
+        return "A database error occurred while fetching links."
+    except Exception as e:
+        # Log the error and return an error message
+        print(f"Error fetching links: {e}")
+        return "An error occurred while fetching links."
 
 # Initialize the database when the app starts
 init_db()
