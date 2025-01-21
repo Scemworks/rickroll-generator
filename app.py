@@ -1,5 +1,4 @@
 import psycopg2
-from psycopg2 import sql, pool
 from flask import Flask, render_template, request, redirect, url_for, session
 from datetime import datetime, timedelta
 import secrets
@@ -12,16 +11,15 @@ app.secret_key = secrets.token_hex(16)
 app.config['SESSION_COOKIE_HTTPONLY'] = True
 app.config['SESSION_COOKIE_SECURE'] = True
 
-# PostgreSQL database connection pool
+# PostgreSQL connection string
 DATABASE_URL = "postgresql://neondb_owner:owK1qpUWr0Ck@ep-cold-glitter-a1vo1tgq-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require"
-db_pool = psycopg2.pool.SimpleConnectionPool(1, 10, DATABASE_URL)
 
 DEFAULT_PASSWORD = "link@rickroll"  # Default password for admin login
 
 # Initialize the database
 def init_db():
     try:
-        with db_pool.getconn() as conn:
+        with psycopg2.connect(DATABASE_URL) as conn:
             with conn.cursor() as cursor:
                 cursor.execute("""
                     CREATE TABLE IF NOT EXISTS links (
@@ -36,10 +34,10 @@ def init_db():
     except Exception as e:
         print(f"Database initialization error: {e}")
 
-# Function to add a custom link to the database with expiration
+# Add a custom link to the database with expiration
 def add_custom_link(handle, target_url, expiration_date):
     try:
-        with db_pool.getconn() as conn:
+        with psycopg2.connect(DATABASE_URL) as conn:
             with conn.cursor() as cursor:
                 cursor.execute(
                     "INSERT INTO links (handle, target_url, expiration_date) VALUES (%s, %s, %s)",
@@ -52,10 +50,10 @@ def add_custom_link(handle, target_url, expiration_date):
         print(f"Error adding link: {e}")
         raise
 
-# Function to retrieve a link by its handle
+# Retrieve a link by its handle
 def get_link_by_handle(handle):
     try:
-        with db_pool.getconn() as conn:
+        with psycopg2.connect(DATABASE_URL) as conn:
             with conn.cursor() as cursor:
                 cursor.execute(
                     "SELECT target_url, expiration_date FROM links WHERE handle = %s",
@@ -71,6 +69,51 @@ def get_link_by_handle(handle):
     except Exception as e:
         print(f"Error retrieving link: {e}")
         return None
+
+# Delete a link by ID
+def delete_link(link_id):
+    try:
+        with psycopg2.connect(DATABASE_URL) as conn:
+            with conn.cursor() as cursor:
+                cursor.execute("DELETE FROM links WHERE id = %s", (link_id,))
+                conn.commit()
+    except Exception as e:
+        print(f"Error deleting link: {e}")
+
+# Update a link by ID
+def update_link(link_id, handle, target_url, expiration_date):
+    try:
+        with psycopg2.connect(DATABASE_URL) as conn:
+            with conn.cursor() as cursor:
+                cursor.execute("""
+                    UPDATE links
+                    SET handle = %s, target_url = %s, expiration_date = %s
+                    WHERE id = %s
+                """, (handle, target_url, expiration_date, link_id))
+                conn.commit()
+    except Exception as e:
+        print(f"Error updating link: {e}")
+
+# Fetch all links
+def fetch_all_links():
+    try:
+        with psycopg2.connect(DATABASE_URL) as conn:
+            with conn.cursor() as cursor:
+                cursor.execute("SELECT id, handle, target_url, expiration_date FROM links")
+                links = cursor.fetchall()
+                return [
+                    {
+                        'id': link[0],
+                        'handle': link[1],
+                        'target_url': link[2],
+                        'expiration_date': link[3],
+                        'is_expired': datetime.now() > link[3]
+                    }
+                    for link in links
+                ]
+    except Exception as e:
+        print(f"Error fetching links: {e}")
+        return []
 
 # Home route
 @app.route("/")
@@ -127,29 +170,12 @@ def view_links():
     if "logged_in" not in session:
         return redirect(url_for("login"))
 
-    conn = db_pool.getconn()
     try:
-        with conn.cursor() as cursor:
-            cursor.execute("SELECT id, handle, target_url, expiration_date FROM links")
-            links = cursor.fetchall()
-
-        links = [
-            {
-                'id': link[0],
-                'handle': link[1],
-                'target_url': link[2],
-                'expiration_date': link[3],
-                'is_expired': datetime.now() > link[3]
-            }
-            for link in links
-        ]
+        links = fetch_all_links()
         return render_template("view_links.html", links=links)
     except Exception as e:
         print(f"Error fetching links: {e}")
         return "An error occurred while fetching links."
-    finally:
-        if conn:
-            db_pool.putconn(conn)
 
 # Initialize the database when the app starts
 init_db()
