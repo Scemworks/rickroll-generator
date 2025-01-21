@@ -165,10 +165,19 @@ def logout():
     return redirect(url_for("home"))
 
 # View links route
-@app.route("/view_links")
+@app.route("/view_links", methods=["GET", "POST"])
 def view_links():
     if "logged_in" not in session:
         return redirect(url_for("login"))
+
+    if request.method == "POST":
+        action = request.form.get("action")
+        link_id = request.form.get("link_id")
+
+        if action == "delete":
+            delete_link(link_id)
+        elif action == "edit":
+            return redirect(url_for("edit_link", link_id=link_id))
 
     try:
         links = fetch_all_links()
@@ -177,5 +186,37 @@ def view_links():
         print(f"Error fetching links: {e}")
         return "An error occurred while fetching links."
 
-# Initialize the database when the app starts
+# Edit link route
+@app.route("/edit/<int:link_id>", methods=["GET", "POST"])
+def edit_link(link_id):
+    if "logged_in" not in session:
+        return redirect(url_for("login"))
+
+    if request.method == "POST":
+        handle = request.form.get("handle", "").strip()
+        target_url = request.form.get("target_url", "").strip()
+        expiration_date = datetime.strptime(request.form.get("expiration_date", "").strip(), "%Y-%m-%d %H:%M:%S")
+
+        if not handle or not target_url:
+            return render_template("edit_link.html", error="All fields are required!", link_id=link_id)
+
+        update_link(link_id, handle, target_url, expiration_date)
+        return redirect(url_for("view_links"))
+
+    # Retrieve current link data
+    with psycopg2.connect(DATABASE_URL) as conn:
+        with conn.cursor() as cursor:
+            cursor.execute("SELECT handle, target_url, expiration_date FROM links WHERE id = %s", (link_id,))
+            link = cursor.fetchone()
+            if link:
+                return render_template("edit_link.html", link={
+                    "id": link_id,
+                    "handle": link[0],
+                    "target_url": link[1],
+                    "expiration_date": link[2].strftime("%Y-%m-%d %H:%M:%S")
+                })
+            else:
+                return "Link not found!"
+
+# Initialize the database
 init_db()
