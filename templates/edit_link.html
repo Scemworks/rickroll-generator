@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Link</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="edit-container">
+        <h1>Edit Link</h1>
+        <form method="post">
+            <div class="form-group">
+                <label for="handle">Link Handle:</label>
+                <input type="text" id="handle" name="handle" value="{{ link.handle }}" required>
+            </div>
+            <div class="form-group">
+                <label for="target_url">Target URL:</label>
+                <input type="url" id="target_url" name="target_url" value="{{ link.target_url }}" required>
+            </div>
+            <div class="form-group">
+                <label for="expiration_date">Expiration Date:</label>
+                <input type="datetime-local" id="expiration_date" name="expiration_date" value="{{ link.expiration_date }}" required>
+            </div>
+            {% if error %}
+            <p class="error-message">{{ error }}</p>
+            {% endif %}
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Save Changes</button>
+                <button type="button" class="btn btn-secondary" onclick="window.location.href='{{ url_for('view_links') }}';">Cancel</button>
+            </div>
+        </form>
+    </div>
+</body>
+</html>
